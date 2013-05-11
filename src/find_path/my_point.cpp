@@ -1,0 +1,27 @@
+#include "cg/find_path/my_point.h"
+
+my_point::my_point(): x(0), y(0) {}
+
+my_point::my_point(double x_, double y_): x(x_), y(y_) {}
+
+my_point::my_point(double x_, double y_, int e0_, int e1_): x(x_), y(y_), e0(e0_), e1(e1_){}
+
+int my_point::num_edge_1() const
+{
+    return e0;
+}
+
+int my_point::num_edge_2() const
+{
+    return e1;
+}
+
+bool my_point::operator <(const my_point &p)
+{
+    return (x < p.x) || (x == p.x && y < p.y);
+}
+
+bool my_point::operator ==(const my_point &p)
+{
+    return (x == p.x && y == p.y);
+}

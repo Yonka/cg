@@ -1,0 +1,27 @@
+set(VISUALIZATION_SOURCES 
+   visualization/drawer_impl.cpp
+   visualization/printer_impl.cpp
+   visualization/main_window.cpp
+   visualization/visualization.cpp
+   visualization/draw_util.cpp
+)
+
+set(FIND_PATH_SOURCES 
+   find_path/adaptive.cpp
+   find_path/edge.cpp
+   find_path/my_point.cpp
+   find_path/find_path.cpp
+)
+
+include_directories(.)
+
+add_library(visualization
+   ${VISUALIZATION_SOURCES}
+)
+
+add_library(find_path
+   ${FIND_PATH_SOURCES}
+)
+
+target_link_libraries(visualization ${QT_LIBRARIES} ${OPENGL_LIBRARIES})
+target_link_libraries(find_path ${QT_LIBRARIES} ${OPENGL_LIBRARIES})

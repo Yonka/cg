@@ -1,0 +1,146 @@
+#include "adaptive.h"
+#include <limits>
+
+std::pair<double, double> sum(double a, double b)
+{
+    std::pair<double, double> res;
+    res.first = a + b;
+    double bv = res.first - a;
+    double av = res.first - bv;
+    double br = b - bv;
+    double ar = a - av;
+    res.second = ar + br;
+    return res;
+}
+
+std::pair<double, double> split(double a, int s)
+{
+    std::pair<double, double> res;
+    double c = ((1LL << s) + 1LL) * a;
+    double ab = c - a;
+    res.first = c - ab;
+    res.second = a - res.first;
+    return res;
+}
+
+std::pair<double, double> prod(double a, double b)
+{
+    std::pair<double, double> res;
+    res.first = a * b;
+    static int s = std::numeric_limits<double>::digits - std::numeric_limits<double>::digits / 2;
+    std::pair<double, double> as = split(a, s);
+    std::pair<double, double> bs = split(b, s);
+    double err1 = res.first - (as.first * bs.first);
+    double err2 = err1 - (as.second * bs.first);
+    double err3 = err2 - (as.first * bs.second);
+    res.second = (as.second * bs.second) - err3;
+    return res;
+}
+
+void grow_exp(double *e, double b, double *h, int e_size)
+{
+    double q = b;
+    for (int i = 0; i < e_size; i++)
+    {
+        std::pair<double, double> tmp = sum(q, e[i]);
+        h[i] = tmp.second;
+        q = tmp.first;
+    }
+    h[e_size] = q;
+}
+
+void exp_sum(double *e, double *f, int e_size, int f_size)
+{
+    for(int i = 0; i < f_size; i++)
+    {
+        grow_exp(e + i, f[i], e + i, e_size);
+    }
+}
+
+int vp(const my_point &a, const my_point &b, const my_point &c)
+{
+    double t[12];
+
+    std::pair<double, double> tmp;
+    tmp = prod(b.x, c.y);
+    t[0] = tmp.first;
+    t[1] = tmp.second;
+    tmp = prod(-b.x, a.y);
+    t[2] = tmp.first;
+    t[3] = tmp.second;
+    tmp = prod(-a.x, c.y);
+    t[4] = tmp.first;
+    t[5] = tmp.second;
+    tmp = prod(-b.y, c.x);
+    t[6] = tmp.first;
+    t[7] = tmp.second;
+    tmp = prod(b.y, a.x);
+    t[8] = tmp.first;
+    t[9] = tmp.second;
+    tmp = prod(a.y, c.x);
+    t[10] = tmp.first;
+    t[11] = tmp.second;
+
+    exp_sum(t, t + 2, 2, 2);
+    exp_sum(t + 4, t + 6, 2, 2);
+    exp_sum(t + 8, t + 10, 2, 2);
+    exp_sum(t, t + 4, 4, 4);
+    exp_sum(t, t + 8, 8, 4);
+
+    for (int i = 11; i >= 0; i--)
+    {
+        if (t[i] > 0)
+            return 1;
+        if (t[i] < 0)
+            return -1;
+    }
+    return 0;
+}
+
+int sp(const my_point &a, const my_point &b, const my_point &c)
+{
+    double t[16];
+
+    std::pair<double, double> tmp;
+    tmp = prod(a.x, b.x);
+    t[0] = tmp.first;
+    t[1] = tmp.second;
+    tmp = prod(-c.x, b.x);
+    t[2] = tmp.first;
+    t[3] = tmp.second;
+    tmp = prod(-c.x, a.x);
+    t[4] = tmp.first;
+    t[5] = tmp.second;
+    tmp = prod(c.x, c.x);
+    t[6] = tmp.first;
+    t[7] = tmp.second;
+    tmp = prod(a.y, b.y);
+    t[8] = tmp.first;
+    t[9] = tmp.second;
+    tmp = prod(-c.y, b.y);
+    t[10] = tmp.first;
+    t[11] = tmp.second;
+    tmp = prod(-c.y, a.y);
+    t[12] = tmp.first;
+    t[13] = tmp.second;
+    tmp = prod(c.y, c.y);
+    t[14] = tmp.first;
+    t[15] = tmp.second;
+
+    exp_sum(t, t + 2, 2, 2);
+    exp_sum(t + 4, t + 6, 2, 2);
+    exp_sum(t + 8, t + 10, 2, 2);
+    exp_sum(t + 12, t + 14, 2, 2);
+    exp_sum(t, t + 4, 4, 4);
+    exp_sum(t + 8, t + 12, 4, 4);
+    exp_sum(t, t + 8, 8, 8);
+
+    for (int i = 15; i >= 0; i--)
+    {
+        if (t[i] > 0)
+            return 1;
+        if (t[i] < 0)
+            return -1;
+    }
+    return 0;
+}
